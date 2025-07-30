@@ -170,36 +170,6 @@ classDiagram
   Respuesta "1" -- "many" RespuestaItem
 ```
 
-### 3. Flujo CRUD y Resultados
-
-Ver [DIAGRAMAS.md](./DIAGRAMAS.md) para más diagramas de flujo, CRUD y flujos de resultados.
-
----
-
-## Instalación y Ejecución
-
-### 1. Clona el repositorio
-
-```bash
-git clone https://github.com/felipesanchez-dev/proyecto-final-crud-full-stack.git
-cd proyecto-final-crud-full-stack
-```
-
-### 2. Instalación de dependencias
-
-#### Backend
-```bash
-cd server
-npm install
-```
-
-#### Frontend
-```bash
-cd ../frontend
-npm install
-```
-
----
 
 ## Configuración de Variables de Entorno
 
@@ -399,25 +369,6 @@ Esta es la documentación para el backend de la aplicación de encuestas, desarr
 -   **Documentación**: Documentación interactiva de la API con Swagger.
 
 ---
-
-## Instalación y Ejecución
-
-Sigue estos pasos para levantar el servidor en tu entorno local.
-
-### 1. Clonar el Repositorio
-
-```bash
-git clone <URL_DEL_REPOSITORIO>
-cd <NOMBRE_DEL_DIRECTORIO>
-```
-
-### 2. Instalar Dependencias
-
-Asegúrate de tener [Node.js](https://nodejs.org/) instalado. Luego, instala las dependencias del proyecto.
-
-```bash
-npm install
-```
 
 ### 3. Configurar Variables de Entorno
 
