@@ -1,9 +1,13 @@
+// src/pages/QuestionFormPage.js
+
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { addQuestionToSurvey } from '../services/survey.service';
+import './nuevo.css'; // ¡Importa el archivo CSS aquí!
 
 const QuestionFormPage = () => {
   const { idEncuesta } = useParams();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     numPregunta: 1,
@@ -14,7 +18,6 @@ const QuestionFormPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     if (name.startsWith('opcion')) {
       const index = parseInt(name.split('-')[1], 10);
       const updatedOpciones = [...formData.opciones];
@@ -27,30 +30,45 @@ const QuestionFormPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const finalOpciones = formData.opciones.map((op) => op.trim()).filter(Boolean);
+
+    if (formData.tipo === 'opcion' && finalOpciones.length < 2) {
+      alert('Las preguntas de opción múltiple deben tener al menos 2 opciones.');
+      return;
+    }
 
     try {
       const payload = {
         numPregunta: Number(formData.numPregunta),
         textoPregunta: formData.textoPregunta.trim(),
         tipo: formData.tipo,
-        opciones: formData.opciones.map((op) => op.trim()).filter(Boolean),
       };
+
+      if (formData.tipo === 'opcion') {
+        payload.opciones = finalOpciones;
+      }
+      
+      if (!idEncuesta) {
+        throw new Error("El ID de la encuesta no está definido.");
+      }
 
       await addQuestionToSurvey(idEncuesta, payload);
       alert('Pregunta guardada correctamente');
+      navigate(`/admin/surveys/edit/${idEncuesta}`); 
     } catch (error) {
       console.error('Error al guardar la pregunta:', error);
-      alert('Ocurrió un error al guardar la pregunta');
+      alert(error.message || 'Ocurrió un error al guardar la pregunta');
     }
   };
 
   return (
-    <div>
-      <h2>Agregar Pregunta</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Número de Pregunta:</label>
+    <div className="question-form-container">
+      <h2>Agregar Pregunta a la Encuesta</h2>
+      <form onSubmit={handleSubmit} className="question-form">
+        <div className="form-group">
+          <label htmlFor="numPregunta">Número de Pregunta:</label>
           <input
+            id="numPregunta"
             type="number"
             name="numPregunta"
             value={formData.numPregunta}
@@ -60,9 +78,10 @@ const QuestionFormPage = () => {
           />
         </div>
 
-        <div>
-          <label>Texto de la Pregunta:</label>
+        <div className="form-group">
+          <label htmlFor="textoPregunta">Texto de la Pregunta:</label>
           <input
+            id="textoPregunta"
             type="text"
             name="textoPregunta"
             value={formData.textoPregunta}
@@ -71,9 +90,10 @@ const QuestionFormPage = () => {
           />
         </div>
 
-        <div>
-          <label>Tipo de Pregunta:</label>
+        <div className="form-group">
+          <label htmlFor="tipo">Tipo de Pregunta:</label>
           <select
+            id="tipo"
             name="tipo"
             value={formData.tipo}
             onChange={handleChange}
@@ -85,23 +105,24 @@ const QuestionFormPage = () => {
         </div>
 
         {formData.tipo === 'opcion' && (
-          <div>
-            <label>Opciones:</label>
-            {formData.opciones.map((opcion, index) => (
-              <input
-                key={index}
-                type="text"
-                name={`opcion-${index}`}
-                value={opcion}
-                onChange={handleChange}
-                placeholder={`Opción ${index + 1}`}
-                required
-              />
-            ))}
+          <div className="form-group">
+            <label>Opciones (llena al menos 2):</label>
+            <div className="options-grid">
+              {formData.opciones.map((opcion, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  name={`opcion-${index}`}
+                  value={opcion}
+                  onChange={handleChange}
+                  placeholder={`Opción ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         )}
 
-        <button type="submit">Guardar Pregunta</button>
+        <button type="submit" className="submit-button">Guardar Pregunta</button>
       </form>
     </div>
   );
