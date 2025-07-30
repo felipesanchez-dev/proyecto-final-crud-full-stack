@@ -146,39 +146,7 @@ A continuación se presentan diagramas y descripciones visuales para comprender 
 
 ---
 
-## 1. Diagrama de Arquitectura General
 
-```mermaid
-graph TD
-  subgraph Frontend (React)
-    A[Login/Register] --> B[Dashboard]
-    B --> C[Listado de Encuestas]
-    B --> D[Detalle de Encuesta]
-    D --> E[Responder Encuesta]
-    B --> F[Panel de Admin]
-    F --> G[CRUD Encuestas]
-    F --> H[CRUD Preguntas]
-  end
-
-  subgraph Backend (Node/Express/TypeScript)
-    I[API REST]
-    I --> J[Auth Controller]
-    I --> K[Encuesta Controller]
-    I --> L[Pregunta Controller]
-    I --> M[Respuesta Controller]
-    K <--> N[MongoDB]
-    L <--> N
-    M <--> N
-    J <--> N
-  end
-
-  C --API REST--> I
-  D --API REST--> I
-  E --API REST--> I
-  F --API REST--> I
-```
-
----
 
 ## 2. Flujo de Autenticación
 
