@@ -1,60 +1,98 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getSurveyById } from '../services/survey.service';
-import { Typography, Box, Paper, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Button,
+} from '@mui/material';
+import { getSurveyById, sendSurveyResponse } from '../services/survey.service';
 
 const SurveyDetailPage = () => {
-  const [survey, setSurvey] = useState(null);
-  const [loading, setLoading] = useState(true);
   const { id } = useParams();
+  const [survey, setSurvey] = useState(null);
+  const [respuestas, setRespuestas] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSurvey = async () => {
       try {
-        const surveyData = await getSurveyById(id);
-        setSurvey(surveyData.encuesta);
+        const data = await getSurveyById(id);
+        setSurvey(data);
       } catch (error) {
-        console.error('Failed to fetch survey details', error);
+        console.error('Error al obtener la encuesta:', error);
       } finally {
         setLoading(false);
       }
     };
+
     fetchSurvey();
   }, [id]);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+  const handleChange = (preguntaId, valor) => {
+    setRespuestas((prev) => ({
+      ...prev,
+      [preguntaId]: valor,
+    }));
+  };
 
-  if (!survey) {
-    return <Typography>Survey not found.</Typography>;
-  }
+  const handleSubmit = async () => {
+    const usuarioId = '688a667604ed530fa83ef431';
+
+    try {
+      await sendSurveyResponse(id, usuarioId, respuestas);
+      alert('¡Respuestas enviadas con éxito!');
+    } catch (error) {
+      console.error('Error al enviar respuestas:', error);
+      alert('Error al enviar las respuestas. Intenta de nuevo.');
+    }
+  };
+
+  if (loading) return <Typography>Cargando encuesta...</Typography>;
+  if (!survey) return <Typography>Encuesta no encontrada</Typography>;
 
   return (
-    <Box>
+    <div style={{ padding: '2rem' }}>
       <Typography variant="h4" gutterBottom>
         {survey.nombreEncuesta}
       </Typography>
-      <Typography variant="subtitle1" color="textSecondary" gutterBottom>
+      <Typography variant="subtitle1" gutterBottom>
         {survey.descripcion}
       </Typography>
-      <Paper>
-        <List>
-          {survey.preguntas.map((pregunta) => (
-            <ListItem key={pregunta._id}>
-              <ListItemText
-                primary={pregunta.textoPregunta}
-                secondary={`Type: ${pregunta.tipo}`}
-              />
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
-    </Box>
+
+      {survey.preguntas.map((pregunta) => (
+        <Card key={pregunta.id} style={{ marginBottom: '1rem' }}>
+          <CardContent>
+            <Typography variant="h6">{pregunta.texto}</Typography>
+            <RadioGroup
+              value={respuestas[pregunta.id] || ''}
+              onChange={(e) => handleChange(pregunta.id, e.target.value)}
+            >
+              {pregunta.opciones.map((opcion, index) => (
+                <FormControlLabel
+                  key={index}
+                  value={opcion}
+                  control={<Radio />}
+                  label={opcion}
+                />
+              ))}
+            </RadioGroup>
+          </CardContent>
+        </Card>
+      ))}
+
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleSubmit}
+        disabled={Object.keys(respuestas).length !== survey.preguntas.length}
+      >
+        Enviar Respuestas
+      </Button>
+    </div>
   );
 };
 

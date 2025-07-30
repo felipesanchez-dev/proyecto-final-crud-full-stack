@@ -36,10 +36,10 @@ const SurveyFormPage = () => {
 
   const fetchSurvey = async () => {
     try {
-      const surveyData = await getSurveyById(id);
-      setName(surveyData.encuesta.nombreEncuesta);
-      setDescription(surveyData.encuesta.descripcion);
-      setQuestions(surveyData.encuesta.preguntas);
+      const survey = await getSurveyById(id);
+      setName(survey.nombreEncuesta);
+      setDescription(survey.descripcion);
+      setQuestions(Array.isArray(survey.preguntas) ? survey.preguntas : []);
     } catch (error) {
       console.error('Failed to fetch survey', error);
     }
@@ -47,7 +47,10 @@ const SurveyFormPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const surveyData = { nombreEncuesta: name, descripcion: description };
+    const surveyData = {
+      nombreEncuesta: name,
+      descripcion: description,
+    };
     try {
       if (isEditing) {
         await updateSurvey(id, surveyData);
@@ -61,12 +64,12 @@ const SurveyFormPage = () => {
   };
 
   const handleQuestionDelete = async (questionId) => {
-    if (window.confirm('Are you sure you want to delete this question?')) {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta pregunta?')) {
       try {
         await deleteQuestionFromSurvey(id, questionId);
-        fetchSurvey(); // Refresh survey data
+        fetchSurvey(); // Refresca la lista
       } catch (error) {
-        console.error('Failed to delete question', error);
+        console.error('Error eliminando la pregunta', error);
       }
     }
   };
@@ -75,11 +78,11 @@ const SurveyFormPage = () => {
     <Container maxWidth="md">
       <Box sx={{ marginTop: 8 }}>
         <Typography variant="h4" gutterBottom>
-          {isEditing ? 'Edit Survey' : 'Create Survey'}
+          {isEditing ? 'Editar Encuesta' : 'Crear Encuesta'}
         </Typography>
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Survey Name"
+            label="Nombre de la encuesta"
             fullWidth
             required
             value={name}
@@ -87,7 +90,7 @@ const SurveyFormPage = () => {
             sx={{ mb: 2 }}
           />
           <TextField
-            label="Description"
+            label="Descripción"
             fullWidth
             multiline
             rows={4}
@@ -96,44 +99,52 @@ const SurveyFormPage = () => {
             sx={{ mb: 2 }}
           />
           <Button type="submit" variant="contained">
-            {isEditing ? 'Update Survey' : 'Create Survey'}
+            {isEditing ? 'Actualizar Encuesta' : 'Crear Encuesta'}
           </Button>
         </form>
 
         {isEditing && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h5" gutterBottom>
-              Questions
+              Preguntas
             </Typography>
             <Button
               variant="contained"
               onClick={() => navigate(`/admin/surveys/${id}/questions/new`)}
               sx={{ mb: 2 }}
             >
-              Add Question
+              Agregar Pregunta
             </Button>
             <Paper>
               <List>
-                {questions.map((question) => (
-                  <ListItem
-                    key={question._id}
-                    secondaryAction={
-                      <>
-                        <IconButton
-                          edge="end"
-                          onClick={() => navigate(`/admin/surveys/${id}/questions/edit/${question._id}`)}
-                        >
-                          <Edit />
-                        </IconButton>
-                        <IconButton edge="end" onClick={() => handleQuestionDelete(question._id)}>
-                          <Delete />
-                        </IconButton>
-                      </>
-                    }
-                  >
-                    <ListItemText primary={question.textoPregunta} />
+                {Array.isArray(questions) && questions.length > 0 ? (
+                  questions.map((question) => (
+                    <ListItem
+                      key={question.id}
+                      secondaryAction={
+                        <>
+                          <IconButton
+                            edge="end"
+                            onClick={() =>
+                              navigate(`/admin/surveys/${id}/questions/edit/${question.id}`)
+                            }
+                          >
+                            <Edit />
+                          </IconButton>
+                          <IconButton edge="end" onClick={() => handleQuestionDelete(question.id)}>
+                            <Delete />
+                          </IconButton>
+                        </>
+                      }
+                    >
+                      <ListItemText primary={question.textoPregunta} />
+                    </ListItem>
+                  ))
+                ) : (
+                  <ListItem>
+                    <ListItemText primary="No hay preguntas aún." />
                   </ListItem>
-                ))}
+                )}
               </List>
             </Paper>
           </Box>

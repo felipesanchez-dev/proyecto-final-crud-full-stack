@@ -40,3 +40,16 @@ export const deleteQuestionFromSurvey = async (surveyId, questionId) => {
   const { data } = await api.delete(`/encuestas/${surveyId}/preguntas/${questionId}`);
   return data;
 };
+
+export const sendSurveyResponse = async (surveyId, usuarioId, respuestas) => {
+  const payload = {
+    usuarioId,
+    respuestas: Object.entries(respuestas).map(([preguntaId, valor]) => ({
+      preguntaId,
+      valor
+    }))
+  };
+  const { data } = await api.post(`/encuestas/${surveyId}/responder`, payload);
+  return data;
+};
+
