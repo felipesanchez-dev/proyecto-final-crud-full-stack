@@ -1,4 +1,5 @@
 import express, { Router } from "express";
+import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "../config/swagger";
 
@@ -20,6 +21,7 @@ export class Server {
   }
 
   async start() {
+    this.app.use(cors());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
 
