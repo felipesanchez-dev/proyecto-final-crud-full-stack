@@ -52,4 +52,3 @@ export const sendSurveyResponse = async (surveyId, usuarioId, respuestas) => {
   const { data } = await api.post(`/encuestas/${surveyId}/responder`, payload);
   return data;
 };
-

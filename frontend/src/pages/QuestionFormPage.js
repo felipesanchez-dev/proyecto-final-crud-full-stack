@@ -1,107 +1,109 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
-  addQuestionToSurvey,
-  updateQuestionInSurvey,
-  getSurveyById,
-} from '../services/survey.service';
-import {
-  TextField,
-  Button,
-  Container,
-  Typography,
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-} from '@mui/material';
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { addQuestionToSurvey } from '../services/survey.service';
 
 const QuestionFormPage = () => {
-  const [text, setText] = useState('');
-  const [type, setType] = useState('texto');
-  const [options, setOptions] = useState('');
-  const { surveyId, questionId } = useParams();
-  const navigate = useNavigate();
-  const isEditing = Boolean(questionId);
+  const { idEncuesta } = useParams();
 
-  useEffect(() => {
-    if (isEditing) {
-      const fetchQuestion = async () => {
-        try {
-          const surveyData = await getSurveyById(surveyId);
-          const question = surveyData.encuesta.preguntas.find(q => q._id === questionId);
-          if (question) {
-            setText(question.textoPregunta);
-            setType(question.tipo);
-            setOptions(question.opciones ? question.opciones.join(',') : '');
-          }
-        } catch (error) {
-          console.error('Failed to fetch question', error);
-        }
-      };
-      fetchQuestion();
+  const [formData, setFormData] = useState({
+    numPregunta: 1,
+    textoPregunta: '',
+    tipo: 'opcion',
+    opciones: ['', '', '', ''],
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name.startsWith('opcion')) {
+      const index = parseInt(name.split('-')[1], 10);
+      const updatedOpciones = [...formData.opciones];
+      updatedOpciones[index] = value;
+      setFormData({ ...formData, opciones: updatedOpciones });
+    } else {
+      setFormData({ ...formData, [name]: value });
     }
-  }, [surveyId, questionId, isEditing]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const questionData = {
-      textoPregunta: text,
-      tipo: type,
-      opciones: type === 'opcion' ? options.split(',').map(opt => opt.trim()) : undefined,
-    };
+
     try {
-      if (isEditing) {
-        await updateQuestionInSurvey(surveyId, questionId, questionData);
-      } else {
-        await addQuestionToSurvey(surveyId, questionData);
-      }
-      navigate(`/admin/surveys/edit/${surveyId}`);
+      const payload = {
+        numPregunta: Number(formData.numPregunta),
+        textoPregunta: formData.textoPregunta.trim(),
+        tipo: formData.tipo,
+        opciones: formData.opciones.map((op) => op.trim()).filter(Boolean),
+      };
+
+      await addQuestionToSurvey(idEncuesta, payload);
+      alert('Pregunta guardada correctamente');
     } catch (error) {
-      console.error('Failed to save question', error);
+      console.error('Error al guardar la pregunta:', error);
+      alert('Ocurrió un error al guardar la pregunta');
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ marginTop: 8 }}>
-        <Typography variant="h4" gutterBottom>
-          {isEditing ? 'Edit Question' : 'Add Question'}
-        </Typography>
-        <form onSubmit={handleSubmit}>
-          <TextField
-            label="Question Text"
-            fullWidth
+    <div>
+      <h2>Agregar Pregunta</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Número de Pregunta:</label>
+          <input
+            type="number"
+            name="numPregunta"
+            value={formData.numPregunta}
+            onChange={handleChange}
+            min="1"
             required
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            sx={{ mb: 2 }}
           />
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Type</InputLabel>
-            <Select value={type} label="Type" onChange={(e) => setType(e.target.value)}>
-              <MenuItem value="texto">Text</MenuItem>
-              <MenuItem value="opcion">Option</MenuItem>
-              <MenuItem value="boolean">Boolean</MenuItem>
-            </Select>
-          </FormControl>
-          {type === 'opcion' && (
-            <TextField
-              label="Options (comma-separated)"
-              fullWidth
-              required
-              value={options}
-              onChange={(e) => setOptions(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-          )}
-          <Button type="submit" variant="contained">
-            {isEditing ? 'Update Question' : 'Add Question'}
-          </Button>
-        </form>
-      </Box>
-    </Container>
+        </div>
+
+        <div>
+          <label>Texto de la Pregunta:</label>
+          <input
+            type="text"
+            name="textoPregunta"
+            value={formData.textoPregunta}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <label>Tipo de Pregunta:</label>
+          <select
+            name="tipo"
+            value={formData.tipo}
+            onChange={handleChange}
+            required
+          >
+            <option value="opcion">Opción Múltiple</option>
+            <option value="abierta">Abierta</option>
+          </select>
+        </div>
+
+        {formData.tipo === 'opcion' && (
+          <div>
+            <label>Opciones:</label>
+            {formData.opciones.map((opcion, index) => (
+              <input
+                key={index}
+                type="text"
+                name={`opcion-${index}`}
+                value={opcion}
+                onChange={handleChange}
+                placeholder={`Opción ${index + 1}`}
+                required
+              />
+            ))}
+          </div>
+        )}
+
+        <button type="submit">Guardar Pregunta</button>
+      </form>
+    </div>
   );
 };
 
