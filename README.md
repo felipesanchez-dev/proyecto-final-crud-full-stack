@@ -1,154 +1,117 @@
 # Proyecto Final CRUD Full Stack – Sistema de Encuestas
 
-Este proyecto es una aplicación full stack para la gestión de encuestas con autenticación de usuarios, administración, y visualización de resultados. Incluye backend en Node.js/Express/TypeScript y frontend en React, junto con una API REST documentada con Swagger.
+> Aplicación full stack para la gestión de encuestas, con autenticación robusta basada en JWT, administración por roles, visualización de resultados, arquitectura profesional y documentación interactiva. Incluye backend Node.js/Express/TypeScript, frontend React/MUI y base de datos MongoDB.
 
 ---
 
 ## Tabla de Contenidos
-- [Descripción General](#descripción-general)
-- [Arquitectura y Tecnologías](#arquitectura-y-tecnologías)
+
+- [Resumen Ejecutivo](#resumen-ejecutivo)
+- [Motivación](#motivación)
+- [Arquitectura General](#arquitectura-general)
+- [Tecnologías y Estructura](#tecnologías-y-estructura)
+- [Diagramas de Arquitectura y Flujos](#diagramas-de-arquitectura-y-flujos)
 - [Instalación y Ejecución](#instalación-y-ejecución)
-- [Endpoints Principales](#endpoints-principales)
-- [Diagramas y Flujo de la Aplicación](./DIAGRAMAS.md)
+- [Configuración de Variables de Entorno](#configuración-de-variables-de-entorno)
+- [Flujos de Uso: Usuario y Administrador](#flujos-de-uso-usuario-y-administrador)
+- [Autenticación JWT y Seguridad](#autenticación-jwt-y-seguridad)
+- [Endpoints Principales (API REST)](#endpoints-principales-api-rest)
 - [Swagger: Documentación Interactiva](#swagger-documentación-interactiva)
+- [Buenas Prácticas y Seguridad](#buenas-prácticas-y-seguridad)
+- [Contribuir y Recursos](#contribuir-y-recursos)
 
 ---
 
-## Descripción General
+## Resumen Ejecutivo
 
-Esta aplicación permite a usuarios autenticarse, gestionar (crear, leer, actualizar y eliminar) encuestas y preguntas, responder encuestas y consultar resultados agregados. Está diseñada siguiendo buenas prácticas de arquitectura limpia y separación de responsabilidades, facilitando el desarrollo, mantenimiento y pruebas.
+Sistema completo para crear, responder y administrar encuestas, pensado para ser fácilmente extendible y seguro. Implementa administración por roles, visualización de resultados y documentación interactiva con Swagger. Es ideal para organizaciones, investigación o cualquier contexto donde se requiera la gestión efectiva de encuestas.
 
 ---
 
-## Arquitectura y Tecnologías
+## Motivación
+
+El proyecto busca demostrar las mejores prácticas en arquitectura full stack moderna, integrando autenticación segura, una API robusta, un frontend amigable y una estructura escalable, útil para empresas, instituciones educativas o investigación.
+
+---
+
+## Arquitectura General
+
+```mermaid
+flowchart LR
+  subgraph Frontend [React + MUI]
+    A1[Login/Register] --> A2[Panel Usuario]
+    A2 --> A3[Panel Admin]
+    A2 --> A4[Responder Encuestas]
+    A3 --> A5[Gestión de Encuestas]
+  end
+  subgraph Backend [Node.js/Express/TypeScript]
+    B1[API REST]
+    B2[JWT Auth]
+    B3[CRUD Encuestas]
+    B4[Gestión Usuarios]
+    B5[Swagger Docs]
+    B1 --> B2
+    B1 --> B3
+    B1 --> B4
+    B1 --> B5
+  end
+  subgraph DB [MongoDB]
+    D1[Usuarios]
+    D2[Encuestas]
+    D3[Respuestas]
+  end
+  A1 -- Axios --> B1
+  A2 -- Axios --> B1
+  B1 -- Mongoose --> D1
+  B1 -- Mongoose --> D2
+  B1 -- Mongoose --> D3
+  B5 -. Documentación .-> A1
+```
+
+---
+
+## Tecnologías y Estructura
 
 ### Backend
+
 - **Lenguaje:** TypeScript
 - **Framework:** Node.js + Express
 - **Base de Datos:** MongoDB/Mongoose
 - **Autenticación:** JWT (JSON Web Tokens)
 - **Documentación:** Swagger
-- **Principales módulos:** 
-  - Rutas de autenticación y gestión de usuarios
-  - CRUD de encuestas y preguntas anidadas
-  - Respuestas de usuarios y agregación de resultados
+- **Estructura de Carpetas:** application, domain, infrastructure, presentation
 
 ### Frontend
+
 - **Framework:** React
 - **Routing:** React Router
-- **Gestión de estado:** Context API para autenticación
 - **UI:** Material-UI (MUI)
+- **Gestión de estado:** Context API (autenticación)
 - **Consumo API:** Axios
 
----
+### Estructura de Carpetas
 
-## Instalación y Ejecución
-
-### 1. Clonar el Repositorio
-
-```bash
-git clone https://github.com/felipesanchez-dev/proyecto-final-crud-full-stack.git
-cd proyecto-final-crud-full-stack
 ```
-
-### 2. Instalar Dependencias
-
-#### Backend
-```bash
-cd server
-npm install
-```
-
-#### Frontend
-```bash
-cd ../frontend
-npm install
-```
-
-### 3. Configurar Variables de Entorno
-
-Configura los archivos `.env` para el backend y frontend según corresponda (ver ejemplos en cada carpeta).
-
-### 4. Ejecutar el Servidor
-
-#### Backend
-```bash
-cd server
-npm run dev
-# Servidor disponible en http://localhost:3000
-```
-
-#### Frontend
-```bash
-cd frontend
-npm start
-# Aplicación React en http://localhost:3001
+proyecto-final-crud-full-stack/
+├── server/
+│   └── src/
+│       ├── application/
+│       ├── domain/
+│       ├── infrastructure/
+│       ├── presentation/
+├── frontend/
+│   └── src/
+│       ├── pages/
+│       ├── components/
+│       ├── context/
+└── DIAGRAMAS.md
 ```
 
 ---
 
-## Endpoints Principales
+## Diagramas de Arquitectura y Flujos
 
-La API REST provee endpoints para autenticación, gestión de encuestas, preguntas y respuestas.
-
-### Autenticación (`/api/auth`)
-
-- `POST /login` – Iniciar sesión de usuario.
-- `POST /register` – Registrar un nuevo usuario.
-- `POST /admin-login` – Login de administrador (requiere rol `ADMIN_ROLE`).
-- `GET /revalidate-token` – Revalida el token y renueva sesión.
-
-### Encuestas (`/api/encuestas`)
-
-- `GET /` – Listar todas las encuestas.
-- `GET /:id` – Obtener encuesta por ID.
-- `POST /` – Crear una nueva encuesta.
-- `PUT /:id` – Actualizar encuesta.
-- `DELETE /:id` – Eliminar encuesta.
-
-### Preguntas (`/api/encuestas/:id/preguntas`)
-
-- `POST /:id/preguntas` – Añadir nueva pregunta a encuesta.
-- `PUT /:id/preguntas/:preguntaId` – Actualizar pregunta.
-- `DELETE /:id/preguntas/:preguntaId` – Eliminar pregunta.
-
-### Respuestas y Resultados (`/api/encuestas/:id/...`)
-
-- `POST /:id/responder` – Enviar respuestas a una encuesta.
-- `GET /:id/resultados` – Obtener resultados agregados de una encuesta.
-
-Consulta la documentación Swagger para detalles de cada endpoint y sus esquemas de datos.
-
----
-
-## Swagger: Documentación Interactiva
-
-La API está documentada y disponible en Swagger:
-
-- **URL:** [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-
-En la interfaz de Swagger puedes:
-- Ver todos los endpoints disponibles
-- Probar endpoints desde el navegador
-- Consultar los esquemas de datos (DTOs)
-- Usar "Authorize" para probar rutas protegidas
-
----
-
-## Diagramas
-
-Consulta el archivo [`DIAGRAMAS.md`](./DIAGRAMAS.md) para ver diagramas de arquitectura, flujo y esquemas de datos.
-
----
-# Diagramas de Arquitectura y Flujos
-
-A continuación se presentan diagramas y descripciones visuales para comprender la estructura y el flujo de la aplicación.
-
----
-
-
-
-## 2. Flujo de Autenticación
+### 1. Flujo de Autenticación
 
 ```mermaid
 sequenceDiagram
@@ -159,15 +122,13 @@ sequenceDiagram
 
   Usuario->>Frontend: Ingresa email/contraseña
   Frontend->>API: POST /api/auth/login
-  API->>DB: Busca usuario y valida
+  API->>DB: Valida usuario
   DB-->>API: Usuario válido/No válido
   API-->>Frontend: Retorna JWT (si éxito)
   Frontend->>Usuario: Acceso permitido / error
 ```
 
----
-
-## 3. Modelo de Datos Simplificado
+### 2. Modelo de Datos Simplificado
 
 ```mermaid
 classDiagram
@@ -189,7 +150,7 @@ classDiagram
     string id
     number numPregunta
     string textoPregunta
-    string tipo // texto, opcion, boolean
+    string tipo
     string[] opciones
   }
   class Respuesta {
@@ -202,7 +163,6 @@ classDiagram
     string preguntaId
     string valor
   }
-
   Usuario "1" -- "many" Respuesta
   Encuesta "1" -- "many" Pregunta
   Encuesta "1" -- "many" Respuesta
@@ -210,74 +170,220 @@ classDiagram
   Respuesta "1" -- "many" RespuestaItem
 ```
 
+### 3. Flujo CRUD y Resultados
+
+Ver [DIAGRAMAS.md](./DIAGRAMAS.md) para más diagramas de flujo, CRUD y flujos de resultados.
+
 ---
 
-## 4. Flujo CRUD de Encuestas y Preguntas
+## Instalación y Ejecución
 
-```mermaid
-sequenceDiagram
-  participant Admin
-  participant Frontend
-  participant API
-  participant DB
+### 1. Clona el repositorio
 
-  Admin->>Frontend: Crea/edita/elimina encuesta/pregunta
-  Frontend->>API: POST/PUT/DELETE /api/encuestas /api/encuestas/:id/preguntas
-  API->>DB: Actualiza colección correspondiente
-  DB-->>API: Confirma operación
-  API-->>Frontend: Respuesta éxito/error
-  Frontend->>Admin: Muestra resultado
+```bash
+git clone https://github.com/felipesanchez-dev/proyecto-final-crud-full-stack.git
+cd proyecto-final-crud-full-stack
+```
+
+### 2. Instalación de dependencias
+
+#### Backend
+```bash
+cd server
+npm install
+```
+
+#### Frontend
+```bash
+cd ../frontend
+npm install
 ```
 
 ---
 
-## 5. Flujo de Respuestas y Resultados
+## Configuración de Variables de Entorno
+
+1. Crea un archivo `.env` en `server/` basado en `.env.template`.
+2. Ejemplo de configuración:
+
+```
+PORT=3000
+MONGO_URL=mongodb://localhost:27017
+MONGO_DB_NAME=encuestas-db
+JWT_SEED=ESTA-ES-MI-SEMILLA-SECRETA
+```
+
+---
+
+## Flujos de Uso: Usuario y Administrador
+
+### Usuario
+
+1. Registrarse / Ingresar
+2. Visualizar encuestas disponibles
+3. Responder encuestas
+4. Consultar resultados (si está habilitado)
+
+### Administrador
+
+1. Ingresar como admin
+2. Crear, editar o eliminar encuestas y preguntas
+3. Visualizar estadísticas y resultados agregados
+
+---
+
+## Autenticación JWT y Seguridad
+
+El sistema utiliza **JSON Web Tokens (JWT)** para autenticar usuarios y proteger rutas sensibles.
+
+- Al iniciar sesión o registrarse, el usuario recibe un token JWT.
+- El token debe ser enviado en la cabecera `Authorization: Bearer <token>` en cada petición protegida.
+- Los tokens tienen fecha de expiración y se pueden revalidar con el endpoint `/api/auth/revalidate-token`.
+- Existen roles (`USER_ROLE`, `ADMIN_ROLE`) para limitar el acceso a ciertas funciones.
+
+**Ejemplo de flujo de autenticación:**
 
 ```mermaid
 sequenceDiagram
   participant Usuario
   participant Frontend
   participant API
-  participant DB
 
-  Usuario->>Frontend: Responde encuesta
-  Frontend->>API: POST /api/encuestas/:id/responder
-  API->>DB: Guarda respuestas
-  DB-->>API: Confirma guardado
-  API-->>Frontend: Éxito
-  Frontend->>Usuario: Mensaje de confirmación
-
-  Usuario->>Frontend: Consulta resultados
-  Frontend->>API: GET /api/encuestas/:id/resultados
-  API->>DB: Agrega y agrupa resultados
-  DB-->>API: Retorna resumen
-  API-->>Frontend: Muestra resultados agregados
+  Usuario->>Frontend: Login/Registro
+  Frontend->>API: POST /api/auth/login
+  API-->>Frontend: JWT Token
+  Frontend->>API: (con token) Solicitud protegida
+  API-->>Frontend: Respuesta autorizada
 ```
 
 ---
 
-## 6. Estructura de Carpetas (Resumen)
+## Endpoints Principales (API REST)
 
+Consulta la [documentación Swagger](#swagger-documentación-interactiva) para detalles de cada endpoint y ejemplos de uso.
+
+### Autenticación (`/api/auth`)
+
+- `POST /login` – Inicia sesión y retorna un JWT.
+- `POST /register` – Registra un nuevo usuario.
+- `POST /admin-login` – Login exclusivo para administradores.
+- `GET /revalidate-token` – Revalida un token de sesión.
+
+### Encuestas (`/api/encuestas`)
+
+- `GET /` – Lista todas las encuestas.
+- `GET /:id` – Obtiene una encuesta específica.
+- `POST /` – Crea una nueva encuesta.
+- `PUT /:id` – Actualiza una encuesta.
+- `DELETE /:id` – Elimina una encuesta.
+
+### Preguntas (`/api/encuestas/:id/preguntas`)
+
+- `POST /:id/preguntas` – Añade una pregunta.
+- `PUT /:id/preguntas/:preguntaId` – Actualiza una pregunta.
+- `DELETE /:id/preguntas/:preguntaId` – Elimina una pregunta.
+
+### Respuestas y Resultados (`/api/encuestas/:id/...`)
+
+- `POST /:id/responder` – Envía respuestas a una encuesta.
+- `GET /:id/resultados` – Obtiene resultados agregados.
+
+---
+
+## Ejemplos de Uso de la API
+
+### 1. Login de usuario
+
+```json
+POST /api/auth/login
+{
+  "email": "correo@ejemplo.com",
+  "password": "tu-password"
+}
 ```
-proyecto-final-crud-full-stack/
-├── server/
-│   ├── src/
-│   │   ├── application/
-│   │   ├── domain/
-│   │   ├── infrastructure/
-│   │   ├── presentation/
-│   │   └── ...
-│   └── README.md
-├── frontend/
-│   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   ├── context/
-│   │   └── ...
-│   └── README.md
-└── DIAGRAMAS.md
+
+### 2. Registro de usuario
+
+```json
+POST /api/auth/register
+{
+  "name": "Nombre Apellido",
+  "email": "correo@ejemplo.com",
+  "password": "tu-password"
+}
+```
+
+### 3. Creación de encuesta
+
+```json
+POST /api/encuestas
+{
+  "nombreEncuesta": "Encuesta de Satisfacción",
+  "descripcion": "Feedback sobre nuestros servicios"
+}
+```
+
+### 4. Envío de respuestas
+
+```json
+POST /api/encuestas/:id/responder
+{
+  "usuarioId": "60d... (opcional si autenticado)",
+  "respuestas": [
+    {
+      "preguntaId": "60d...",
+      "valor": "Mucho"
+    },
+    {
+      "preguntaId": "60d...",
+      "valor": true
+    }
+  ]
+}
 ```
 
 ---
 
-Estos diagramas ayudan a visualizar la estructura, modelos y flujos más importantes de la aplicación. Para detalles sobre endpoints y ejemplos de uso consulta el archivo README principal y la documentación Swagger.
+## Swagger: Documentación Interactiva
+
+La API está documentada y disponible en Swagger:
+
+- **URL:** [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
+Desde Swagger puedes:
+- Ver y probar todos los endpoints
+- Consultar los esquemas de datos (DTOs)
+- Probar rutas protegidas con autenticación JWT
+
+---
+
+## Buenas Prácticas y Seguridad
+
+- Usa contraseñas robustas y mantén tu JWT en secreto.
+- No expongas tus variables de entorno.
+- Mantén actualizadas las dependencias.
+- Cambia la semilla `JWT_SEED` antes de producción.
+- Limita los permisos de los usuarios usando roles.
+- Protege los endpoints sensibles y valida siempre la entrada de datos.
+- Haz backups regulares de tu base de datos.
+
+---
+
+## Contribuir y Recursos
+
+¿Quieres contribuir? ¡Bienvenido! Por favor:
+
+1. Haz un fork y crea una rama.
+2. Sigue las normas de código y documentación.
+3. Abre un Pull Request describiendo tus cambios.
+
+Recursos útiles:
+- [Documentación oficial de React](https://react.dev/)
+- [Node.js](https://nodejs.org/)
+- [Express](https://expressjs.com/)
+- [Mongoose](https://mongoosejs.com/)
+- [Swagger](https://swagger.io/)
+
+---
+
+¿Dudas? Abre un issue o revisa los archivos de documentación y diagramas para más detalles.
