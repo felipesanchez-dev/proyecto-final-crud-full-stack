@@ -11,7 +11,7 @@ const DashboardPage = () => {
     const fetchSurveys = async () => {
       try {
         const surveysData = await getAllSurveys();
-        setSurveys(surveysData.encuestas);
+        setSurveys(Array.isArray(surveysData?.encuestas) ? surveysData.encuestas : []);
       } catch (error) {
         console.error('Failed to fetch surveys', error);
       } finally {

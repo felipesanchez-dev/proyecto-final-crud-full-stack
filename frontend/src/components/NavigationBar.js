@@ -26,7 +26,7 @@ const NavigationBar = () => {
               <Button color="inherit" component={Link} to="/dashboard">
                 Dashboard
               </Button>
-              {user.roles.includes('ADMIN_ROLE') && (
+                {user?.roles?.includes('ADMIN_ROLE') && (
                 <Button color="inherit" component={Link} to="/admin">
                   Admin Panel
                 </Button>
